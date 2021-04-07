@@ -6,7 +6,7 @@ output:
 ---
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
-  fig.path = "Figs"
+  fig.path = "Figs/GGPlotFigs-"
 )
 ```
 

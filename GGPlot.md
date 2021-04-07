@@ -59,7 +59,7 @@ msleep   %>%
        title = "Number of Observations")
 ```
 
-![](Figsunnamed-chunk-3-1.png)<!-- -->
+![](Figs/GGPlotFigs-unnamed-chunk-3-1.png)<!-- -->
 
 ```r
 #Histogram one variable
@@ -90,7 +90,7 @@ msleep   %>%
        title = "Histogram of total sleep")
 ```
 
-![](Figsunnamed-chunk-4-1.png)<!-- -->
+![](Figs/GGPlotFigs-unnamed-chunk-4-1.png)<!-- -->
 
 ```r
 #Scatter plots with multiple variable
@@ -134,7 +134,7 @@ mpg  %>%
 ## `geom_smooth()` using formula 'y ~ x'
 ```
 
-![](Figsunnamed-chunk-5-1.png)<!-- -->
+![](Figs/GGPlotFigs-unnamed-chunk-5-1.png)<!-- -->
 
 ```r
   #stat_density2d() +   #density contour
@@ -152,7 +152,7 @@ msleep  %>%
   theme_light()
 ```
 
-![](Figsunnamed-chunk-6-1.png)<!-- -->
+![](Figs/GGPlotFigs-unnamed-chunk-6-1.png)<!-- -->
 
 ```r
 #+ Geomjitter
@@ -165,7 +165,7 @@ msleep  %>%
   geom_jitter(width = 0.2, aes(color = sleep_total))
 ```
 
-![](Figsunnamed-chunk-6-2.png)<!-- -->
+![](Figs/GGPlotFigs-unnamed-chunk-6-2.png)<!-- -->
 
 ```r
 # +facewrap
@@ -185,7 +185,7 @@ msleep  %>%
 ## Saving 7 x 5 in image
 ```
 
-![](Figsunnamed-chunk-6-3.png)<!-- -->
+![](Figs/GGPlotFigs-unnamed-chunk-6-3.png)<!-- -->
 
 
 
@@ -201,7 +201,7 @@ library(ggfortify)
 autoplot(AirPassengers) + labs(title="AirPassengers")  # where AirPassengers is a 'ts' object
 ```
 
-![](Figsunnamed-chunk-8-1.png)<!-- -->
+![](Figs/GGPlotFigs-unnamed-chunk-8-1.png)<!-- -->
 
 ```r
 class(AirPassengers)
@@ -218,5 +218,5 @@ economics <- data.frame(economics)  # convert to dataframe
 ggplot(economics) + geom_line(aes(x=date, y=pce, color="pcs")) + geom_line(aes(x=date, y=unemploy, col="unemploy")) + scale_color_discrete(name="Legend") + labs(title="Economics") # plot multiple time series using 'geom_line's
 ```
 
-![](Figsunnamed-chunk-8-2.png)<!-- -->
+![](Figs/GGPlotFigs-unnamed-chunk-8-2.png)<!-- -->
 
