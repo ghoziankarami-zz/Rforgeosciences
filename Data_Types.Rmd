@@ -1,9 +1,14 @@
 ---
 title: "Data Types"
-author: "Ghozian Karami"
-date: "4/7/2021"
-output: html_document
+output: 
+  html_document:
+    keep_md: true
 ---
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "Figs/GGPlotFigs-"
+)
+```
 
 
 ### statistics function 

@@ -1,9 +1,15 @@
 ---
 title: "Landslide Prediction"
-output:
-  pdf_document: default
-  html_document: default
+output: 
+  html_document:
+    keep_md: true
 ---
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "Figs/GGPlotFigs-"
+)
+```
+-
 ## By Ghozian Islam Karami
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, error=FALSE)

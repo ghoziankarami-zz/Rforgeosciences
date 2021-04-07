@@ -1,4 +1,11 @@
 ---
 title: "How to visualize water storage"
-output: html_notebook
+output: 
+  html_document:
+    keep_md: true
 ---
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "Figs/GGPlotFigs-"
+)
+```

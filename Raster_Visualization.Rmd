@@ -1,7 +1,14 @@
 ---
-title: "Important codes"
-output: html_document
+title: "Raster Visualization"
+output: 
+  html_document:
+    keep_md: true
 ---
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "Figs/GGPlotFigs-"
+)
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
