@@ -18,21 +18,14 @@ pets <- data.frame(mo, size, weight, breed)
 names(pets) <- c("Months old", "Size", "Weight", "Breed")
 rownames(pets) <- name
 
-
 # alternative naming
-
 pets <- data.frame(row.names = name, "Months old" = mo, "Size" = size, "Weight" = weight, "Breed" = breed)
-str(pets)
 
 ```
 
 #read the data table
 ```{r}
 #read the data table
-
-#set the data folder
-getwd()
-setwd("D:/Thesis/Data/R/Latihan")
 
 my.pok <- read.table("pokRdex_comma.csv", 
                      sep = ',', 
@@ -62,9 +55,7 @@ library(tidyverse)
 starwars
 
 my.wars <- as.data.frame(starwars) #converting to data frame
-
 my.wars <- my.wars[ ,-(11:13)] #subsetting the data except data from column 11:13
-my.wars
 
 #to see the tom and the bottom of the data
 head(my.wars)
@@ -88,28 +79,22 @@ my.wars[c(1:14), c("name", "homeworld")]
 
 #Extending a data frame
 ```{r}
-#Extending a data frame
-my.wars
-
-#adding new rows
+#adding new column
 
 mark <- c(1:87)
 carrie <- c(5:91)
 
 my.wars$markscreentime <- mark #note the data should have the same ammount of data
 my.wars$carriescreentime <- carrie
-
-#removeing a variable from a data frame
-my.wars$markscreentime <- NULL  
-my.wars$carriescreentime <- NULL
-
 #second ways
 my.wars[["markscreentime"]] <- mark
 my.wars[["carriescreentime"]] <- carrie
-
 #third ways using c bind
 my.wars <- cbind(my.wars, markscreentime = mark, carriescreentime = carrie)
 
+# column from a data frame
+my.wars$markscreentime <- NULL  
+my.wars$carriescreentime <- NULL
 
 # more example
 
@@ -150,10 +135,8 @@ my.wars$height[is.na(my.wars$height)] <- median(my.wars$height, na.rm = T)
 #Data transformation with DPLYR
 
 library(tidyverse)
-
 star <- starwars
 star
-
 filter(star, species == "Droid", homeworld =="Tatooine") #to subset the data spesific keyword column
 
 #keep the variable you mention
@@ -173,7 +156,7 @@ star.trans
 
 #to arrange the data 
 arrange(star, mass)
-arrange(star, desc(mass)) descending
+arrange(star, desc(mass)) 
 
 #group and summarize combination example
 summarise(star, avg.height = mean(height, na.rm = T))
@@ -251,26 +234,12 @@ tb.separated
 unite(tb.separated, "new", c("age", "cases"))
 
 #use spread to spreading the data column into several column (inverse to gather)
-
 weather <- read.csv("weather.csv")
 weather <- as.tibble(weather)
-
 weather.spread <- spread(weather, key = element, value = value)
 
 ```
 
-
-
-
-
-```{r}
-#stat_density2d  is for density contour
-
-ggplot(hdi, aes(HDI.2015, CPI.2015)) %>% + 
-  geom_point(aes(color = Region), shape = 20, fill ="white", size = 3, stroke = 2) + theme_light() +
-  labs(title = "corruption and Human Development") + stat_density2d()
-
-```
 
 ## generate random data and rnorm data
 

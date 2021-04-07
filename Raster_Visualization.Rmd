@@ -1,0 +1,317 @@
+---
+title: "Important codes"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###  import shp to sf and convert CRS
+```{r eval=FALSE, include=FALSE}
+#import shp files
+area_sf <- st_read("D:/Projects/ENV Special Topic Paper/GIS/StudyArea.shp")
+area_sf <- st_transform(area_sf, crs="+proj=longlat +datum=WGS84")
+crs(area_sf)
+
+```
+
+### import shp to sp and convert CRS
+
+```{r eval=FALSE, include=FALSE}
+
+area_sp <- readOGR("D:/Projects/ENV Special Topic Paper/GIS/StudyArea.shp")
+proj4string(area_sp) #check the CRS
+#change to WGS
+area_sp <- spTransform(area_sp, CRS("+proj=longlat +datum=WGS84"))
+```
+
+
+### import shp files to sf dataframe and convert to WGS
+
+```{r eval=FALSE, include=FALSE}
+# how to import shp files to sf dataframe and convert to WGS 
+samp_random <- "D:/Projects/ENV Special Topic Paper/GIS/InsAR_randomsample.shp" %>%
+  st_read() %>% st_transform(crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+#convert sf geometry to x y column df, mutate and convert to df, remove na value
+samp_random_xy <- do.call(rbind, st_geometry(samp_random)) %>% 
+  as_tibble() %>% setNames(c("lon","lat")) 
+samp_random <- samp_random %>% mutate(samp_random_xy) 
+samp_random <- samp_random %>% as.data.frame() %>% na.omit()
+#delete previous XY CRS column
+samp_random[ , c("X", "Y", "geometry")] <- list(NULL)
+```
+
+### Open street map study area
+
+
+```{r eval=FALSE, include=FALSE}
+#create study area large zoom map
+##defining the upper-left and lower-right corners (Y, X)
+extent.area2 <- openmap(c(36,32), c(9,59), type = "esri" )
+plot(extent.area2)
+map.area2 <- openproj(extent.area2, projection = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs" )
+map.study <- autoplot.OpenStreetMap(map.area2)  +
+  labs(title = "Study Area",x = "Longitude", y="Latitude") + 
+  geom_polygon(aes(x = long, y = lat, group=id),
+               data = area_sp, color ="red", fill ="orangered4",
+               alpha = .04, size = 1) 
+map.study
+
+#create point location map 
+extent.area <- openmap(c(30.5,38), c(29.3,39.15), type = "esri" )
+plot(extent.area)
+map.area <- openproj(extent.area, projection = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs" )
+map.random.point <- autoplot.OpenStreetMap(map.area)  +
+  labs(title = "Random sample location",x = "Longitude", y="Latitude") + 
+  geom_point(data = samp_random, aes(x = lon, y = lat, color = InSAR_Raw_), size = 0.5) + 
+  scale_color_viridis_c(option = "plasma", name = "DS (cm)", na.value = "gray") + 
+  geom_polygon(aes(x = long, y = lat, group=id),
+             data = area_sp, color ="red", fill ="orangered4", alpha = 0.01, size = 2) 
+map.random.point
+
+#make plot side by side
+library(cowplot)
+plot_grid(map.study, map.random.point, labels = "AUTO", label_y = 0.8)
+```
+
+```{r}
+library(tidyverse)
+library(OpenStreetMap)
+library(rgdal)
+library(sf)
+
+#samp random need to be changed, because the name is the same as in the hist.boxplot.R
+
+#import shp files
+area_sf <- st_read("D:/Projects/ENV Special Topic Paper/GIS/StudyArea.shp")
+area_sf <- st_transform(area_sf, crs="+proj=longlat +datum=WGS84")
+crs(area_sf)
+#plot the point using Openstreet Map Esri (need to use dataframe and WGS crs)
+#add Polygon from shapefile
+#import shp as sp class
+area_sp <- readOGR("D:/Projects/ENV Special Topic Paper/GIS/StudyArea.shp")
+proj4string(area_sp) #check the CRS
+#change to WGS
+area_sp <- spTransform(area_sp, CRS("+proj=longlat +datum=WGS84"))
+
+
+#create study area large zoom map
+##defining the upper-left and lower-right corners (Y, X)
+extent.area2 <- openmap(c(36,32), c(9,59), type = "esri" )
+plot(extent.area2)
+map.area2 <- openproj(extent.area2, projection = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs" )
+map.study <- autoplot.OpenStreetMap(map.area2)  +
+  labs(title = "Study Area",x = "Longitude", y="Latitude") + 
+  geom_polygon(aes(x = long, y = lat, group=id),
+               data = area_sp, color ="red", fill ="orangered4",
+               alpha = .04, size = 1) 
+map.study
+
+#plot the map using google Map API (ggmap) 
+library(tidyverse)
+library(ggmap)
+
+#register google 
+register_google(key = "AIzaSyBf0cxawzGkYzG8cpteTmBD3EQdCrsnRU0", write = TRUE)
+#GGMAP bounding box lowerleftlon, lowerleftlat, upperrightlon, upperrightlat
+
+mymap <- get_googlemap(center = c(lat = 38.5, lon = 29.9), 
+                       maptype = "satellite", zoom = 9) %>% ggmap() + 
+  geom_polygon(aes(x = long, y = lat, group=id), data = area_sp,
+               color ="red", fill ="orangered4", alpha = 0.01, size = 2) + 
+  labs(x = "Longitude", y="Latitude")
+
+mymap
+#make plot side by side
+library(cowplot)
+plot_grid(map.study, mymap, labels = "AUTO", label_y = 0.8)
+
+
+
+```
+
+```{r}
+plot(merge_2019_fil)
+e <- drawExtent(show=TRUE)
+#draw the boundary by clicking on the plots window
+
+crop_2019 <- crop(merge_2019_fil, e)
+plot(crop_2019)
+```
+
+
+```{r}
+library(tidyverse)
+library(OpenStreetMap)
+library(rgdal)
+library(sf)
+
+
+#import shp files
+area_sf <- st_read("D:/Projects/ENV Special Topic Paper/GIS/StudyArea.shp")
+area_sf <- st_transform(area_sf, crs="+proj=longlat +datum=WGS84")
+crs(area_sf)
+#plot the point using Openstreet Map Esri (need to use dataframe and WGS crs)
+#add Polygon from shapefile
+#import shp as sp class
+area_sp <- readOGR("D:/Projects/ENV Special Topic Paper/GIS/StudyArea.shp")
+proj4string(area_sp) #check the CRS
+#change to WGS
+area_sp <- spTransform(area_sp, CRS("+proj=longlat +datum=WGS84"))
+
+
+#create study area large zoom map
+##defining the upper-left and lower-right corners (Y, X)
+extent.area2 <- openmap(c(36,32), c(9,59), type = "esri" )
+plot(extent.area2)
+map.area2 <- openproj(extent.area2, projection = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs" )
+map.study <- autoplot.OpenStreetMap(map.area2)  +
+  labs(title = "Study Area",x = "Longitude", y="Latitude") + 
+  geom_polygon(aes(x = long, y = lat, group=id),
+               data = area_sp, color ="red", fill ="orangered4",
+               alpha = .04, size = 1) 
+map.study
+
+#plot the map using google Map API (ggmap) 
+library(tidyverse)
+library(ggmap)
+
+#register google 
+register_google(key = "AIzaSyBf0cxawzGkYzG8cpteTmBD3EQdCrsnRU0", write = TRUE)
+#GGMAP bounding box lowerleftlon, lowerleftlat, upperrightlon, upperrightlat
+
+mymap <- get_googlemap(center = c(lat = 38.5, lon = 29.9), 
+                       maptype = "satellite", zoom = 9) %>% ggmap() + 
+  geom_polygon(aes(x = long, y = lat, group=id), data = area_sp,
+               color ="red", fill ="orangered4", alpha = 0.01, size = 2) + 
+  labs(x = "Longitude", y="Latitude")
+
+mymap
+#make plot side by side
+library(cowplot)
+plot_grid(map.study, mymap, labels = "AUTO", label_y = 0.8)
+
+
+
+```
+
+```{r}
+
+
+library("ggplot2")
+theme_set(theme_bw())
+library("sf")
+```
+
+
+```{r}
+library("rnaturalearth")
+library("rnaturalearthdata")
+
+#convert the data into sf
+world <- ne_countries(scale = "medium", returnclass = "sf")
+class(world)
+
+
+```
+
+
+```{r}
+#Data and Basic Plot
+
+ggplot(data = world) +
+    geom_sf()
+
+```
+```{r}
+#Scale bar and North arrow (package ggspatial)
+
+
+library("ggspatial")
+ggplot(data = world) +
+    geom_sf() +
+    annotation_scale(location = "bl", width_hint = 0.5) +
+    annotation_north_arrow(location = "bl", which_north = "true", 
+        pad_x = unit(0.75, "in"), pad_y = unit(0.5, "in"),
+        style = north_arrow_fancy_orienteering) +
+    coord_sf(xlim = c(-102.15, -74.12), ylim = c(7.65, 33.97))
+
+## Scale on map varies by more than 10%, scale bar may be inaccurate
+
+```
+```{r}
+#Country names and other names (geom_text and annotate)
+
+
+library("sf")
+world_points<- st_centroid(world)
+world_points <- cbind(world, st_coordinates(st_centroid(world$geometry)))
+
+ggplot(data = world) +
+geom_sf() +
+geom_text(data= world_points,aes(x=X, y=Y, label=name),
+    color = "darkblue", fontface = "bold", check_overlap = FALSE) +
+annotate(geom = "text", x = -90, y = 26, label = "Gulf of Mexico", 
+    fontface = "italic", color = "grey22", size = 6) +
+coord_sf(xlim = c(-102.15, -74.12), ylim = c(7.65, 33.97), expand = FALSE)
+
+```
+
+
+
+```{r Working on multiple band raster, eval=FALSE, include=FALSE}
+#maybe it can be used for landsat anayliss
+
+# Use stack function to read in all bands
+Band_stack <- stack(paste0("D:/Thesis/Data/InSAR/2015_tif/IW1/201501_201502_Orb_Stack_Ifg_TP_Deb_flt_unwrp_TC.tif"))
+
+# view attributes of stack object
+Band_stack
+
+# view raster attributes
+Band_stack@layers
+
+
+```
+
+
+## Create non-landslide datapoints sample from slope data
+
+```{r non lanslide}
+#load slope .tif
+slope <- raster("slope.tif")
+#create vector classified
+# slope with 0-10 classified as 1 (no landslide is accuired), rest is NA (it will not used)
+reclass_df <- c(0, 10, 1, 10, Inf, NA)
+#convert to matrix
+reclass_m <- matrix(reclass_df, ncol = 3, byrow = TRUE)
+reclass_m 
+#reclasify
+slope_classified <- reclassify(slope, reclass_m)
+plot(slope_classified)
+
+#write raster to tif (Unfortunately, rasterToPolygon was showing error)
+#writeRaster(slope_classified, file="slope_class", format="GTiff", overwrite=TRUE)
+#convert the raster to polygon in QGIS
+#import the shapefile processed by QGIS
+poly_nols <- readOGR("no_ls_poly_class.shp")
+
+#create random sample in slope polygon area (only no landslide / 1)
+no.ls<-spsample(poly_nols,n=100,"random")
+#convert coordinate to same as slope
+no.ls <- spTransform(no.ls, CRS = CRS(proj4string(slope)))
+crs(no.ls)
+class(no.ls)
+#convert to spatial point dataframe
+no.ls.spdf <- as(no.ls,"SpatialPointsDataFrame")
+#convert to  dataframe (just coordinates)
+df <- as.data.frame(no.ls.spdf@coords)
+class(df)
+
+#Export to csv
+#write.csv(df, file="no_ls.csv")
+
+```
+
+

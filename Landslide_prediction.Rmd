@@ -1,0 +1,173 @@
+---
+title: "Landslide Prediction"
+output:
+  pdf_document: default
+  html_document: default
+---
+## By Ghozian Islam Karami
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, error=FALSE)
+knitr::opts_knit$set(root.dir = "D:/Tutorial/Geosoftware Tutorial/R/Landslide prediction machine learning/Sesi 2/Tugas/02_data latihan/Longsor R")
+#setwd("D:/Tutorial/Geosoftware Tutorial/R/Landslide prediction machine learning/Sesi 2/Tugas/02_data latihan/Longsor R")
+
+```
+
+### Open Library and set directory
+```{r Library}
+library(raster)
+library(rgdal)
+library(sp)
+library(dplyr)
+library(DMwR)
+library(caret)
+library(snow)
+library(rgeos)
+library(maptools)
+library(gdalUtils)
+```
+
+## Create non-landslide datapoints sample from slope data
+
+```{r non lanslide}
+#load slope .tif
+slope <- raster("slope.tif")
+#create vector classified
+# slope with 0-10 classified as 1 (no landslide is accuired), rest is NA (it will not used)
+reclass_df <- c(0, 10, 1, 10, Inf, NA)
+#convert to matrix
+reclass_m <- matrix(reclass_df, ncol = 3, byrow = TRUE)
+reclass_m 
+#reclasify
+slope_classified <- reclassify(slope, reclass_m)
+plot(slope_classified)
+
+#write raster to tif (Unfortunately, rasterToPolygon was showing error)
+#writeRaster(slope_classified, file="slope_class", format="GTiff", overwrite=TRUE)
+#convert the raster to polygon in QGIS
+#import the shapefile processed by QGIS
+poly_nols <- readOGR("no_ls_poly_class.shp")
+
+#create random sample in slope polygon area (only no landslide / 1)
+no.ls<-spsample(poly_nols,n=100,"random")
+#convert coordinate to same as slope
+no.ls <- spTransform(no.ls, CRS = CRS(proj4string(slope)))
+crs(no.ls)
+class(no.ls)
+#convert to spatial point dataframe
+no.ls.spdf <- as(no.ls,"SpatialPointsDataFrame")
+#convert to  dataframe (just coordinates)
+df <- as.data.frame(no.ls.spdf@coords)
+class(df)
+
+#Export to csv
+#write.csv(df, file="no_ls.csv")
+
+```
+
+
+## Raster Preparation for creating a merge raster
+```{r Raster Preparation}
+#create merged raster (mozaic raster)
+
+#merged raster
+a <- c('slope.tif', 'ndvi.tif', 'landuse2.tif', 'elevasi2.tif','Curvature.tif')
+e <- extent(slope)
+template <- raster(e)
+#so the raster will be the same extent?? #try to do this code with insar data
+proj4string(template) <- CRS('+init=epsg:23037')
+writeRaster(template, file="merged.tif", format="GTiff", overwrite=TRUE)
+
+mosaic_rasters(gdalfile=a,dst_dataset="merged.tif",of="GTiff",separate=TRUE)
+```
+
+## Raw CSV data training and data test preparation
+### Raw csv = input data that has ls and no ls points, so we need Ls data to be combined with LS data
+### this can be done by using QGIS
+1. Input Landslide data from panitia (add a new field, fill with "2" for the class)
+2. Input csv no ls data and fill "1" for class
+3. combine the data into input.shp
+
+```{r}
+rasstack=stack("merged.tif")
+point=readOGR("input.shp")
+#extract raster value from point 
+head(point)
+#how to delete column from spatial point dataframe file
+point <- point[,-(4:10)]
+rasvalue=extract(rasstack,point)
+head(rasvalue)
+combined=cbind(point,rasvalue)
+head(combined)
+head(rasvalue)
+head(point)
+
+#change column name
+colnames(combined@data)[1] = "class"
+colnames(combined@data)[4] = "B1"
+colnames(combined@data)[5] = "B2"
+colnames(combined@data)[6] = "B3"
+colnames(combined@data)[7] = "B4"
+colnames(combined@data)[8] = "B5"
+
+
+#look at the data count
+combined@data %>%
+  group_by(class) %>%
+  summarise(
+    count = n()
+  )
+combined
+
+#change to dataframe?
+val=combined@data
+val <- na.omit(val)
+head(val)
+class(val)
+
+
+#randomize the data row
+val=val[sample(nrow(val)),]
+val$class = as.factor(val$class)
+class(val)
+head(val)
+
+
+```
+
+## Build a model using Random Forest Classification Algorithm
+
+```{r}
+
+N_FILES=80 #jumlah data
+SPLT=0.8 #80% train
+b = floor(SPLT*N_FILES)
+train = val[1:b,]
+test = val[(b+1):N_FILES,]
+#random forest using caret
+modFit_rf <- caret::train(class ~ B1+B2+B3+B4+B5, method = "rf", data=train)
+
+validation_result<-predict(modFit_rf,newdata=test)
+result_comparison<-cbind(as.numeric(as.character(validation_result)),test[,1]) # class on column 1
+preds<-result_comparison[,1]
+y<-result_comparison[,2]
+
+#check validation result and accuracy
+confmat <- confusionMatrix(as.factor(y),as.factor(preds), positive='2')
+confmat
+library(pROC)
+kurva_roc<-roc(preds, y, levels=c("1", "2"))
+plot(kurva_roc)
+img_subset <- brick("merged.tif")
+names(img_subset) <- c(paste0("B", 1:5, coll = ""))
+
+#image prediction and write image
+beginCluster()
+preds_rf <- clusterR(img_subset, raster::predict, args = list(model = modFit_rf))
+endCluster()
+plot(preds_rf)
+writeRaster(preds_rf, "rf_result_ls_pred", format = "GTiff", overwrite=TRUE)
+gc()
+
+
+```
+
