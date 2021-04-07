@@ -1,0 +1,293 @@
+---
+title: "Latihan Data Analysis"
+output: html_notebook
+---
+
+
+#Creating a Data Frame
+```{r}
+#Creating a Data Frame
+
+name <- c("Flipper", "Bromley", "Nox", "Orion", "Dagger", "Zizi", "Carrie")
+mo <- c(53, 19, 34, 41, 84, 140, 109)
+size <- c("medium", "small", "medium", "large", "small", "extra small", "large")
+weight <- c(21, 8, 4, 6, 7, 2, 36)
+breed <- c("dog", "dog", "cat", "cat", "dog", "cat", "dog")
+
+pets <- data.frame(mo, size, weight, breed)
+names(pets) <- c("Months old", "Size", "Weight", "Breed")
+rownames(pets) <- name
+
+
+# alternative naming
+
+pets <- data.frame(row.names = name, "Months old" = mo, "Size" = size, "Weight" = weight, "Breed" = breed)
+str(pets)
+
+```
+
+#read the data table
+```{r}
+#read the data table
+
+#set the data folder
+getwd()
+setwd("D:/Thesis/Data/R/Latihan")
+
+my.pok <- read.table("pokRdex_comma.csv", 
+                     sep = ',', 
+                     header = TRUE, 
+                     stringsAsFactors = FALSE)
+
+my.pok <- read.csv("pokRdex_comma.csv", stringsAsFactors = FALSE)
+
+my.pok
+```
+
+# export the csv data
+```{r}
+
+# export the csv data
+
+write.csv(pets, file = "pets.csv", row.names = FALSE) #without adding a new column
+write.csv(pets, file = "pets2.csv") #add a new column with name or number
+```
+
+
+#Subsetting Data Frame
+```{r}
+
+#Subsetting Data Frame
+library(tidyverse)
+starwars
+
+my.wars <- as.data.frame(starwars) #converting to data frame
+
+my.wars <- my.wars[ ,-(11:13)] #subsetting the data except data from column 11:13
+my.wars
+
+#to see the tom and the bottom of the data
+head(my.wars)
+tail(my.wars)
+
+my.wars[3, 9]
+my.wars[3, "homeworld"]
+my.wars[5, ]
+head(my.wars[ , 1])  #resulting data frame
+head(my.wars[["name"]]) #resulting vector becuase double square bracket
+
+head(my.wars$name) #resulting vector
+head(my.wars["name"]) #resulting  subsetting column as a dataframe
+
+
+#subsetting multiple column, row from 1 to 14, and the column name resulting data frame
+my.wars[c(1:14), c("name", "homeworld")] 
+
+
+```
+
+#Extending a data frame
+```{r}
+#Extending a data frame
+my.wars
+
+#adding new rows
+
+mark <- c(1:87)
+carrie <- c(5:91)
+
+my.wars$markscreentime <- mark #note the data should have the same ammount of data
+my.wars$carriescreentime <- carrie
+
+#removeing a variable from a data frame
+my.wars$markscreentime <- NULL  
+my.wars$carriescreentime <- NULL
+
+#second ways
+my.wars[["markscreentime"]] <- mark
+my.wars[["carriescreentime"]] <- carrie
+
+#third ways using c bind
+my.wars <- cbind(my.wars, markscreentime = mark, carriescreentime = carrie)
+
+
+# more example
+
+vaccinated <- c("Yes", "Yes", "No", "Yes", "No", "No", "Yes")
+petsv <- cbind(pets, "Vaccinated" = vaccinated)
+
+milo <- data.frame(row.names = "Milo", Months.old = 67, Size = "small", Weight = 7, Breed = "dog", Vaccinated = "Yes")
+
+#using rbind to add row or observations , noted that the names should be the same from previous name
+petsvm <- rbind(petsv, milo)
+
+```
+
+#Dealing with Missing data
+```{r}
+#Dealing with Missing data
+
+eg.na <- c(NA, 1:10)
+mean(eg.na) #Error because have NA value
+mean(eg.na, na.rm = TRUE) #not including NA Value (na.rm)
+
+
+any(is.na(my.wars)) #does the data frane have NA value
+
+#solution
+
+any(is.na(my.wars$homeworld)) #check the column
+my.wars$homeworld[is.na(my.wars$homeworld)] <- "unknown" #Change all the NA value tu Char "Unknown"
+
+#change all the NA value into the median of the known value
+my.wars$height[is.na(my.wars$height)] <- median(my.wars$height, na.rm = T)
+
+```
+
+#Data transformation with DPLYR
+```{r}
+
+#Data transformation with DPLYR
+
+library(tidyverse)
+
+star <- starwars
+star
+
+filter(star, species == "Droid", homeworld =="Tatooine") #to subset the data spesific keyword column
+
+#keep the variable you mention
+select(star, name, birth_year, homeworld)
+select(star, name, homeworld:starships)
+
+select(star, ends_with("color")) #use end with
+select(star, ends_with("color"), everything()) # use everything for the rest
+
+#add a new variable and preserves the rest
+star <- mutate(star, bmi = mass/((height/100)^2))
+select(star, name:bmi)
+
+#add a new variable and drop the rest
+star.trans <- transmute(star, bmi2 = mass/((height/100)^2))
+star.trans
+
+#to arrange the data 
+arrange(star, mass)
+arrange(star, desc(mass)) descending
+
+#group and summarize combination example
+summarise(star, avg.height = mean(height, na.rm = T))
+
+#summarize average height by species
+star.species <- group_by(star, species)
+summarise(star.species, avg.height = mean(height, na.rm = T)) 
+
+```
+
+#sampling data
+```{r}
+#sampling data 
+
+sample_n(star, 10) #sample for n 
+
+sample_frac(star, 0.1) #sample for n fraction
+
+#repeating observation
+
+sample_n(star, 10, replace = TRUE)
+
+
+```
+```{r}
+#pipe operator in R
+
+
+#original code
+star.species <- group_by(star, species)
+star.smr <- summarise(star.species, count = n(), avg.mass = mean(mass, na.rm = T))
+filter(star.smr, count>1)
+
+# data %>% operation A %>% operation B
+star %>%
+  group_by(species) %>%
+  summarise(count = n(), mass = mean(mass, na.rm = T)) %>%
+  filter(count > 1)
+
+
+```
+
+#Tidying Data
+```{r}
+#Tidying Data
+
+library(tidyverse)
+billboard <- read.csv("billboard.csv")
+billboard <- as.tibble(billboard) #convert to tibble
+
+#gather recognizes data with values as column names
+#key the new variable name from variable previously
+#value the new variable from  values previously
+
+billboard2 <- billboard %>% 
+  gather(x1st.week:x76th.week, key = "week", value = "rank", na.rm = T) %>%
+  arrange(artist.inverted)
+billboard2
+
+tb <- read.csv("tb.csv")
+tb <- as.tibble(tb)
+
+tb.gathered <- tb %>% gather(m.014:f.65, key = "column", value = "cases", na.rm = T) %>%
+  arrange(country
+          )
+tb.gathered
+
+#how to separete from one column to two column (from numerical and non numerical)
+tb.separated <- tb.gathered %>% separate(column, into =c("sex", "age"))
+tb.separated
+
+```
+```{r}
+#use unite to combine several colun into one column
+unite(tb.separated, "new", c("age", "cases"))
+
+#use spread to spreading the data column into several column (inverse to gather)
+
+weather <- read.csv("weather.csv")
+weather <- as.tibble(weather)
+
+weather.spread <- spread(weather, key = element, value = value)
+
+```
+
+
+
+
+
+```{r}
+#stat_density2d  is for density contour
+
+ggplot(hdi, aes(HDI.2015, CPI.2015)) %>% + 
+  geom_point(aes(color = Region), shape = 20, fill ="white", size = 3, stroke = 2) + theme_light() +
+  labs(title = "corruption and Human Development") + stat_density2d()
+
+```
+
+## generate random data and rnorm data
+
+```{r}
+
+# To generate 30 integers from 1 to 100 WITH replacement:
+sample(1:100, 30, replace=TRUE)
+
+# To generate 30 integers from 1 to 100 WITHOUT replacement:
+sample(1:100, 30, replace=FALSE)
+
+#To generate numbers from a normal distribution, use rnorm(). By default the mean is 0 and the standard deviation is 1.
+
+rnorm(30)
+
+# Use a different mean and standard deviation
+rnorm(30, mean=50, sd=10)
+
+
+```

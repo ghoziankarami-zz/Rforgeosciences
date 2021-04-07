@@ -1,0 +1,125 @@
+---
+title: "Latihan Raster"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Import RAW File
+raw <- raster("InSAR_Raw.tif")
+```
+
+
+```{r}
+#define the color pallete
+library(RColorBrewer)
+#display.brewer.all() #to see the pallete
+cols <- colorRampPalette(brewer.pal(5,"Spectral"))
+cols2 <- colorRampPalette(brewer.pal(10,"Spectral"))
+
+```
+```{r}
+#standard Plot
+plot(stackraw, col=cols2(20), main="Coherence and Unwrapped Phase")
+```
+
+```{r}
+#spplot
+
+my.palette <- brewer.pal(n = 7, name = "Spectral")
+
+
+#Before and After corrected
+spplot(stackraw, main="InSAR Displacement (cm) Before and After Correction", col.regions = my.palette, cuts = 6, zlim = c(-5,-0,011), names.attr=c(as.character(rasternamescor)))
+
+
+
+#coherence and unwrapped phase
+spplot(stackraw, main="Coherence and Unwrapped Phase", col.regions = my.palette, cuts = 6, zlim = c(-5,1), names.attr=c(as.character(rasternamesraw)))
+
+#Coherence
+spplot(stackcoh, main="Coherence", col.regions = my.palette, cuts = 6)
+
+#Phase
+spplot(stackphase, main="Phase", col.regions = my.palette, cuts = 6, zlim = c(-10,10))
+```
+
+
+```{r}
+
+
+library("ggplot2")
+theme_set(theme_bw())
+library("sf")
+```
+
+
+```{r}
+library("rnaturalearth")
+library("rnaturalearthdata")
+
+#convert the data into sf
+world <- ne_countries(scale = "medium", returnclass = "sf")
+class(world)
+
+
+```
+
+
+```{r}
+#Data and Basic Plot
+
+ggplot(data = world) +
+    geom_sf()
+
+```
+```{r}
+#Scale bar and North arrow (package ggspatial)
+
+
+library("ggspatial")
+ggplot(data = world) +
+    geom_sf() +
+    annotation_scale(location = "bl", width_hint = 0.5) +
+    annotation_north_arrow(location = "bl", which_north = "true", 
+        pad_x = unit(0.75, "in"), pad_y = unit(0.5, "in"),
+        style = north_arrow_fancy_orienteering) +
+    coord_sf(xlim = c(-102.15, -74.12), ylim = c(7.65, 33.97))
+
+## Scale on map varies by more than 10%, scale bar may be inaccurate
+
+```
+```{r}
+#Country names and other names (geom_text and annotate)
+
+
+library("sf")
+world_points<- st_centroid(world)
+world_points <- cbind(world, st_coordinates(st_centroid(world$geometry)))
+
+ggplot(data = world) +
+geom_sf() +
+geom_text(data= world_points,aes(x=X, y=Y, label=name),
+    color = "darkblue", fontface = "bold", check_overlap = FALSE) +
+annotate(geom = "text", x = -90, y = 26, label = "Gulf of Mexico", 
+    fontface = "italic", color = "grey22", size = 6) +
+coord_sf(xlim = c(-102.15, -74.12), ylim = c(7.65, 33.97), expand = FALSE)
+
+```
+
+
+
+```{r }
+
+
+# view raster attributes
+Band_stack@layers
+
+
+```
+
+
+

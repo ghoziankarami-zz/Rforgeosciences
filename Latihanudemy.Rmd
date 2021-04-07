@@ -1,0 +1,359 @@
+---
+title: "Udemy Training"
+output: html_notebook
+---
+
+
+### statistics function 
+```{r}
+
+lvl <- c(8, 10, 10, 1, 10)
+sum(lvl)
+mean(lvl)
+median(lvl)
+length(lvl)
+sd(lvl)
+round(lvl)
+
+```
+
+### slicing and indexing a vector
+```{r}
+lvl["c"]
+lvl[3]
+lvl[c(3, 5, 7, 1)]
+lvl[lvl > 5]
+```
+
+### Function
+```{r}
+#Creating a function
+draw <- function(){
+  deck <- c("Head", "Tail")
+  hand <- sample(deck, size=2, replace = T, prob = c(0.3, 0.7))
+  print(hand)
+}
+
+draw()
+
+```
+
+### Matrix
+- Creating matrix
+- Indexinf Matrix
+- matrix Arithmetic
+```{r}
+
+#to bend the object.to.transform into a two dimensional object with n rows and m columns
+#so the a is converted into matrix class, before dim is numeric class.. but the type is still "double"
+a <- seq(10, 90, by = 10)
+dim(a) <- c(3,3)
+a
+
+#create a hypercube 
+dim(a) <- c(1,3,3)
+
+#use dim (cannot be recycle)
+b <- c("dark", "dark", "dark", "dark", "light", "light", "king", "queen", "pawn", "test")
+dim(b) <- c(5,2)
+
+#use matrix
+amatrix <- matrix(b, nrow = 8, ncol = 2)
+amatrix
+
+#use cbind
+abind <- cbind(amatrix, amatrix)
+abind
+
+#how to assign row and col names
+colnames(abind) <- c("column1", "column2", "column3", "column4")
+rownames(abind) <- c("row1", "row2", "row3", "row4", "row1", "row2", "row3", "row4")
+
+#how to create a matrix in single code
+gdp <- matrix(c(3, 4, 5, 1, 6, 7, 8, 10, 11),
+              nrow = 3, byrow = TRUE,
+              dimnames = list(c("de", "usa", "ind"), c("2014", "2013", "2010"
+                                                       )))
+gdp
+#to export dataframe
+write.csv(gdp, "C:\\Users\\ghozi\\Desktop\\MyData.csv")
+
+
+#Indexing a matrix #same as indexing and slicing a vector, but with [row , column]
+abind
+abind[2, 2]
+abind[2, ]
+abind[, 2]
+abind[c(1, 3, 5)]
+abind[c(1, 3, 5), ]
+abind["row3", ]
+abind[ , "column2" ]
+
+
+#Matrix Arithmetic
+matrixb <- matrix(c(1:20), nrow = 6, ncol = 4)
+matrixb
+colSums(matrixb)
+colMeans(matrixb)
+rowSums(matrixb)
+rowMeans(matrixb)
+
+#matrix multiplication using %*%
+#Note that first ncolumn is needed to be same as second nrow 
+
+matrixc <- matrix(c(1:20), nrow = 4, ncol = 6)
+m.multiplied <- (matrixb %*% matrixc)
+m.multiplied
+```
+
+#Creating a factor
+```{r}
+#Creating a factor (ordinal data)
+
+marital.status <- c("Married", "Married", "Single", "Married", "Divorced", "Widowed", "Divorced")
+
+#to know the type of the data
+str(marital.status)
+
+#convert into factor variable
+
+marital.factor <- factor(marital.status)
+str(marital.factor) 
+#notice the variable are converted into integrer, ordered alpahabeticaly
+
+#how to order based on the levels
+ordered.factor <- factor(marital.status, ordered = TRUE, 
+                         levels = c("Single", "Married", "Divorced", "Widowed"))
+str(ordered.factor)
+
+```
+
+#Using List
+```{r}
+#Using List
+
+my.book <- list("1984", "George", "1949", 
+                list(c(1:8), c(1:10), c(1:6), "Newspeak"))
+my.book
+str(my.book)
+
+
+#Naming A List
+
+my.book <- list(Name = "1984", Author = "George", Published = "1949", 
+                list(PartOne = c(1:8), 
+                     PartTwo = c(1:10),
+                     PartThree = c(1:6),
+                     PartFour = "Newspeak"))
+my.book
+str(my.book)
+
+#subsetting the list using [] for first hieararcy, and [[]] for second hieararcy
+my.book[1:2]
+my.book[4]
+my.book[[4]]
+my.book[[4]][[2]]
+
+```
+
+#Relational Operator
+```{r}
+#Relational Operator == similarity != disimilarity < >  <= >=
+3 == 3
+"cat" == "cat"
+"cat" != "rat"
+7 > 9
+7 < 9
+7<= 9
+
+#Logical Operator and "&"  or "|" not "!"
+w <- 9
+
+(w > 1 | (w < 12)) # TRUE
+(w < 1 | (w < 3)) #FALSE
+(w < 12) & (w >6) #TRUE
+(w < 6) & (w >6) #FALSE
+!(4 < 3) #TRUE
+
+#it also can be used for vector
+
+```
+
+#If and else statement
+```{r}
+
+#If and else statement
+
+
+num <- -3
+if(num < 0){
+  print("your number is negative")
+}
+
+v <- 8
+if(v < 0 ){
+  v <- v * -1
+  print(" I made your object positive")
+} else {
+  print("your object was already postivite, I did nothing")
+}
+
+# else if statement more than two cases
+
+num <- 2
+if(num >= 1 & num < 60){
+  print("Rotten!")
+} else if(num >= 60 & num < 75){
+  print("certified fresh")
+} else {
+  print("please input a number between 1 and 100")
+}
+
+```
+
+note : 
+1.  A condition for an if statement must have only one element that evaluates to a logical (if vector it will be the first value)
+2. an if statement only needs one condition to evaluate to TRUE to stop its search
+
+```{r}
+z <- c(1, 0, -3, 5)
+
+
+#the condition has length > 1 and only the first element will be used
+
+if(z<1){
+  print("God save the quees")
+}
+
+
+```
+
+```{r}
+
+#"w is less than 7" because if statement only needs one condition to evaluate to TRUE 
+
+w <- 6
+if(w < 7){
+  print("w is less than 7")
+} else if(w == 6){
+  print("w is precisely 6")
+} else{
+  print("w is more than 7")
+  
+}
+```
+```{r}
+# For loops
+
+# for(value in x){
+#   y
+# }
+
+title <- c("catch", "me", "if", "you", "can")
+for(word in title){
+  print(word)
+}
+
+```
+```{r}
+ # Create a vector filled with random normal values
+u1 <- rnorm(30)
+print("This loop calculates the square of the first 10 elements of vector u1")
+
+# Initialize `usq`
+usq <- 0
+
+for(i in 1:10) {
+  # i-th element of `u1` squared into `i`-th position of `usq`
+  usq[i] <- u1[i]*u1[i]
+  print(usq[i])
+}
+
+print(i)
+```
+
+
+For statement is for all the value 
+While if the condition is TRUE
+need minimum two body expression
+
+# Write a while loop
+```{r}
+
+
+# Write a while loop that sums all the numbers from 1 to n 
+
+n <- 10
+i <- 1
+sum <- 0
+
+while(i <= n){
+  sum <- sum + i
+  i <- i + 1
+  print(sum)
+}
+
+
+#While loop and repeat loop
+
+n <- 12
+while(n < 0){
+  print(paste("your value equals", n))
+  n <- n + 1
+}
+
+
+repeat{
+  print(paste("your value equals", n))
+  n <- n + 1
+  if(n >= 0){
+    print("N is a positive number")
+    print("the loop will be broken")
+    break
+  }
+}
+
+```
+
+#Function in R 
+local environment is when the function inside the function
+"return"  functions provide the base mechanisms for defining new functions in the R language.
+
+```{r}
+
+#simple function example
+
+mult12 <- function(x){
+  y <- (x*12)
+  return(y)
+}
+
+mult12(3)
+
+
+# What are the principles that determine how R looks up values?
+
+# Answer: 
+# If a name isn't defined in the function environment, R will look one level up. 
+# If it is, even if there is an element with this name outside of the function, R will not use its value.
+
+
+# What does this function return? Try to make a prediction before you run it.
+# Try to explain why that is.
+
+f <- function(x) {
+  f <- function(x) {
+    f <- function(x) {
+      x ^ 2
+    }
+    f(x) + 1
+  }
+  f(x) * 2
+}
+
+f(10)
+
+# Answer:
+# If a function is defined inside another function, R looks inside the current function for a value, 
+# then where that function was defined, and so on, all the way up to the global environment.
+```
