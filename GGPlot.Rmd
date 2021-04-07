@@ -1,7 +1,16 @@
 ---
 title: "Latihan GGPlot"
-output: html_notebook
+output: 
+  html_document:
+    keep_md: true
 ---
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "Figs"
+)
+```
+
+
 ```{r}
 library(tidyverse)
 data() # to see the list of dataset available
@@ -93,7 +102,7 @@ msleep  %>%
 
 ```{r}
 #To save the file
-+ ggsave(filename, path)
+#+ ggsave(filename, path)
 ```
 ```{r}
 #timeseries
