@@ -1,0 +1,70 @@
+---
+title: "GRACE Time Series"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "D:/Projects/Code Project/R Projects/Masdipta_paper" )
+knitr::opts_chunk$set(fig.width = 12, fig.height = 8)
+
+```
+
+```{r}
+library(ncdf4) # package for netcdf manipulation
+library(raster) # package for raster manipulation
+library(rgdal) # package for geospatial analysis
+library(ggplot2) # package for plotting
+library(tidyverse)
+
+```
+
+
+### START FROM HERE ###
+```{r}
+#Import Raster data
+lwe_brick <- brick("D:/Projects/Code Project/R Projects/Thesis/GRACE_Brick.tif")
+nc_data <- nc_open("D:/Projects/Code Project/R Projects/Thesis/Data/GRACE/RL06/latest/CSR_GRACE_GRACE-FO_RL06_Mascons_all-corrections_v02.nc")
+lon <- ncvar_get(nc_data, "lon")
+lat <- ncvar_get(nc_data, "lat", verbose = F)
+t <- ncvar_get(nc_data, "time")
+df <- data.frame(t)
+names(df) <- ("days")
+df$date <- as.Date(df$days - 13, origin ="2002-01-01")
+```
+
+```{r}
+library(RColorBrewer)
+library(rasterVis)
+library(maptools)
+data(wrld_simpl)
+indo_b <- subset(wrld_simpl, NAME=="Indonesia")
+brick_study <- lwe_brick %>% crop(indo_b)  %>% mask(indo_b) 
+#Create indonesia map
+cols <- colorRampPalette(brewer.pal(5,"Spectral"))
+levelplot(brick_study[[187:190]], at=seq(-10, 20, length=15), col.regions=cols, main="TWS in Indonesia", colorkey = list(space ="bottom",height=1, width=1), names.attr=c("September","October", "November", "December"), xlab = list(label = "Longitude", vjust = -.2)) 
+
+
+```
+
+
+```{r}
+library(hrbrthemes)
+library(ggthemes)
+
+```
+
+```{r}
+
+#Zonal statistics (mean) using study area boundary
+time_series_zonal <- extract(brick_study, indo_b, fun=mean)
+#timeseriesplot
+time_series_df <- data.frame(Date=df$date, TWS=t(time_series_zonal))
+ggplot(data=time_series_df[180:193, ], aes(x=Date, y=TWS, group=1)) +
+  geom_line(color="#00AFBB", size = 2) + # make this a line plot
+  ggtitle("Terrestrial Water Storage Anomaly in Indonesia") +     # Set title
+  theme_minimal()  + labs(y="TWS(cm)")
+
+```

@@ -30,6 +30,7 @@ msleep   %>%
   labs(x = "Vore",
        y = NULL,
        title = "Number of Observations")
+
 ```
 ```{r}
 #Histogram one variable
@@ -57,8 +58,8 @@ mpg  %>%
   labs(x = "Engine Size",
        y = "MPG on the Highway",
        title = "FUel efficiency") +
-  theme_minimal() +
-  ggsave("scatterplot.jpg")
+  theme_minimal() 
+
 
   #stat_density2d() +   #density contour
 
@@ -93,8 +94,7 @@ msleep  %>%
   theme_light()+
   #geom_jitter(width = 0.2, aes(color = sleep_total)) +
   facet_wrap(~vore) +#dont forget to put ~
-  coord_flip() +
-  ggsave("boxplot.jpg")
+  coord_flip() 
 
 
 ```
