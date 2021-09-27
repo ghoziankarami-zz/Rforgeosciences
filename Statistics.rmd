@@ -1,0 +1,57 @@
+---
+title: "Statistics for Geosciences"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	fig.height = 6,
+	fig.path = "Figs/StatFigs-",
+	fig.width = 8,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+
+## Library and Data Preparation
+
+We will Install the library, and load to the R environment. We will also load the porosity-permeability data from my github page : [R for Geosciences](https://github.com/ghoziankarami/Rforgeosciences)
+
+```{r}
+#install the library requirement
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse)
+
+#load the dataset
+df <- read.csv("https://raw.githubusercontent.com/ghoziankarami/Rforgeosciences/main/Porosity-Permeability.csv")
+```
+
+
+## Explatory Data Analysis (EDA)
+
+```{r}
+head(df)
+
+```
+
+
+
+## Univariate Data Statistics
+
+```{r}
+
+```
+
+## Bivariate Data Statistics
+
+```{r}
+
+#Scatter Plot
+
+plot(Porosity ~ Permeability, dat = df)
+
+
+```
+
+
